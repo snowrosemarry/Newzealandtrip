@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>新西兰南岛7月6-11日路线地图</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #5c667a;
+      --line: #d8dee9;
+      --panel: #ffffff;
+      --bg: #eef3f8;
+      --sight: #d92d20;
+      --optional: #64748b;
+      --supply: #0e9384;
+      --food: #d97706;
+      --hotel: #7c3aed;
+      --route: #2563eb;
+      --winter: #0f766e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-end;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(27px, 4vw, 42px);
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 880px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .budget {
+      min-width: 230px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+      font-size: 14px;
+    }
+
+    .budget strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 17px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .map-shell,
+    .side-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+
+    #map {
+      width: 100%;
+      height: min(76vh, 820px);
+      min-height: 640px;
+    }
+
+    .side-panel {
+      max-height: min(76vh, 820px);
+      overflow: auto;
+    }
+
+    .panel-section {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-section:last-child {
+      border-bottom: 0;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 19px;
+    }
+
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 15px;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .day-card {
+      padding: 11px 12px;
+      border: 1px solid #e3e8ef;
+      border-radius: 8px;
+      background: #f8fafc;
+      margin-bottom: 10px;
+    }
+
+    .day-card strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+
+    .day-card p {
+      margin: 4px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-right: 7px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .note {
+      padding: 12px;
+      border-left: 4px solid var(--food);
+      border-radius: 4px;
+      background: #fff7ed;
+      color: #7c2d12;
+      font-size: 14px;
+    }
+
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .price-table th,
+    .price-table td {
+      padding: 8px 7px;
+      border-bottom: 1px solid #e3e8ef;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .price-table th {
+      color: #334155;
+      background: #f1f5f9;
+      font-size: 12px;
+    }
+
+    .price-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 999px;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pill-good {
+      background: #15803d;
+    }
+
+    .pill-ok {
+      background: #2563eb;
+    }
+
+    .pill-warn {
+      background: #b45309;
+    }
+
+    .pill-no {
+      background: #991b1b;
+    }
+
+    .leaflet-popup-content {
+      min-width: 220px;
+      margin: 12px 14px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .popup-title {
+      margin: 0 0 4px;
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .popup-type {
+      display: inline-block;
+      margin-bottom: 7px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .popup-tip {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .leaflet-control-layers {
+      border: 0 !important;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16) !important;
+      border-radius: 8px !important;
+      overflow: hidden;
+    }
+
+    .number-icon {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #ffffff;
+      border-radius: 999px;
+      background: var(--route);
+      color: #ffffff;
+      text-align: center;
+      font-weight: 800;
+      line-height: 22px;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28);
+    }
+
+    .pin-icon {
+      width: 22px;
+      height: 22px;
+      border: 3px solid #ffffff;
+      border-radius: 999px;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.26);
+    }
+
+    .leaflet-tooltip {
+      border: 0;
+      border-radius: 6px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+      header {
+        display: block;
+      }
+
+      .budget {
+        margin-top: 12px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      #map,
+      .side-panel {
+        height: auto;
+        max-height: none;
+      }
+
+      #map {
+        min-height: 620px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>新西兰南岛 7月6-11日包车路线</h1>
+        <p class="subtitle">两人出行，7月6日分别抵达基督城，取消凯库拉观鲸，改为南岛顺路舒适线：特卡波、库克山、皇后镇、米尔福德、TSS和Skyline。适合50岁左右领导出行，尽量少赶路、不刺激。</p>
+      </div>
+      <div class="budget">
+        <strong>预算结论</strong>
+        不含机票按锁定版估算：A线约 ¥1.57 万/人，B线约 ¥1.77 万/人；建议每人另留 ¥1000 机动金。机票单列后，A约 ¥2.7-2.8 万/人，B约 ¥6.3-6.4 万/人。
+      </div>
+    </header>
+
+    <section class="layout">
+      <div class="map-shell">
+        <div id="map" aria-label="新西兰南岛7月6-11日路线地图"></div>
+      </div>
+
+      <aside class="side-panel">
+        <section class="panel-section">
+          <h2>地图图例</h2>
+          <div class="legend">
+            <div class="legend-item"><span class="dot" style="background: var(--sight)"></span>必去景点</div>
+            <div class="legend-item"><span class="dot" style="background: var(--optional)"></span>可选景点</div>
+            <div class="legend-item"><span class="dot" style="background: var(--supply)"></span>补给/休息</div>
+            <div class="legend-item"><span class="dot" style="background: var(--food)"></span>吃饭</div>
+            <div class="legend-item"><span class="dot" style="background: var(--hotel)"></span>住宿</div>
+            <div class="legend-item"><span class="dot" style="background: var(--route)"></span>主路线</div>
+            <div class="legend-item"><span class="dot" style="background: var(--winter)"></span>米尔福德日线</div>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h2>7月6-11日新版行程</h2>
+          <div class="day-card">
+            <strong><span class="tag">7/6</span>抵达基督城，住基督城</strong>
+            <p>安排：两人航班不同，分开接机或酒店会合。住 Rydges Latimer Christchurch，约 ¥971/人/晚。</p>
+            <p>可选：早到可去大教堂广场、基督城植物园或国际南极中心，不安排长途赶路。</p>
+          </div>
+          <div class="day-card">
+            <strong><span class="tag">7/7</span>基督城 -> 大教堂广场 -> 好牧羊人教堂 -> 特卡波</strong>
+            <p>景点：大教堂广场、Fairlie休息、特卡波湖、好牧羊人教堂。晚上住 Peppers Bluewater Resort。</p>
+            <p>可选：天气好安排特卡波观星。</p>
+          </div>
+          <div class="day-card">
+            <strong><span class="tag">7/8</span>特卡波湖 -> 好牧羊人教堂 -> 普卡基湖 -> 库克山</strong>
+            <p>景点：约翰山、普卡基湖、库克山国家公园、Tasman Lake 或 Kea Point 轻徒步/观景。</p>
+            <p>吃/休息：Astro Café 或特卡波镇午餐；晚上继续住 Peppers Bluewater Resort，天气好可安排观星。</p>
+          </div>
+          <div class="day-card">
+            <strong><span class="tag">7/9</span>库克山雪山 -> 皇后镇</strong>
+            <p>景点：库克山国家公园、Tasman Lake 或 Kea Point 轻徒步/观景；午后出发去皇后镇。</p>
+            <p>吃/休息：Old Mountaineers Café 或 Twizel/Omarama 简餐；晚住皇后镇，酒店在 Bella Vista / Sudima Five Mile / TOP 10 中三选一。</p>
+          </div>
+          <div class="day-card">
+            <strong><span class="tag">7/10</span>米尔福德峡湾，分 A/B 线</strong>
+            <p>A线：坐长途巴士/包车走瓦卡蒂普湖-米尔福德公路，经 Eglinton Valley、镜湖、猴溪，到峡湾后乘双体船游览。</p>
+            <p>B线：皇后镇飞机直飞米尔福德，抵达后乘船看峡湾，再飞回或车回皇后镇。晚住皇后镇同一家酒店。</p>
+          </div>
+          <div class="day-card">
+            <strong><span class="tag">7/11</span>TSS蒸汽船 + 瓦尔特峰牧场 + Skyline -> 晚机返程</strong>
+            <p>安排：上午/中午 TSS Earnslaw + Walter Peak，下午 Skyline 缆车，晚上按两人不同航班分别送机。</p>
+            <p>吃/休息：酒店寄存行李；若航班早于20:00，TSS和Skyline需要二选一或改顺序。</p>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h2>具体时间表</h2>
+          <p class="subtitle" style="font-size: 13px; margin-bottom: 10px;">按冬季保守节奏估算，实际以航班、天气和游船班次为准。新西兰7月天黑早，尽量避免夜间长途。</p>
+          <table class="price-table">
+            <thead>
+              <tr><th>日期</th><th>时间</th><th>安排</th><th>车程压力</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>7/6 周一</td><td>按航班</td><td>抵达基督城，Rydges Latimer酒店会合。早到可轻松逛大教堂广场/植物园/南极中心。</td><td>低</td></tr>
+              <tr><td>7/7 周二</td><td>09:00-09:30</td><td>基督城市区大教堂广场短停拍照。</td><td>低</td></tr>
+              <tr><td>7/7 周二</td><td>09:30-14:00</td><td>基督城前往特卡波，Fairlie Bakehouse午餐/休息。</td><td>中，约3-3.5小时车程</td></tr>
+              <tr><td>7/7 周二</td><td>14:00-17:00</td><td>特卡波湖、好牧羊人教堂，入住Peppers Bluewater。</td><td>低</td></tr>
+              <tr><td>7/7 周二</td><td>20:30以后</td><td>天气好再参加特卡波观星；天气差就休息。</td><td>低</td></tr>
+              <tr><td>7/8 周三</td><td>09:00-12:30</td><td>约翰山/Astro Café、普卡基湖观景。</td><td>低到中</td></tr>
+              <tr><td>7/8 周三</td><td>13:30-17:30</td><td>库克山国家公园，Tasman Lake/Kea Point轻徒步或观雪山；晚上回特卡波。</td><td>中</td></tr>
+              <tr><td>7/8 周三</td><td>20:30以后</td><td>天气好再参加特卡波观星；天气差就休息。</td><td>低</td></tr>
+              <tr><td>7/9 周四</td><td>09:30-15:30</td><td>特卡波出发前往皇后镇，Omarama/Lindis Pass/Cromwell中途休息。</td><td>中到高，约3.5-4.5小时车程</td></tr>
+              <tr><td>7/9 周四</td><td>16:00以后</td><td>入住皇后镇酒店；若选Bella Vista，湖边/Skyline/TSS步行或短打车更方便。</td><td>低</td></tr>
+              <tr><td>7/10 周五</td><td>06:45-20:00</td><td>A线：巴士/包车走米尔福德公路，经Eglinton Valley、镜湖、猴溪，峡湾双体船后返回皇后镇。</td><td>很高，全天约11-13小时</td></tr>
+              <tr><td>7/10 周五</td><td>08:00-13:00</td><td>B线：皇后镇飞米尔福德，抵达后坐船游峡湾，再飞回/车回皇后镇。</td><td>低到中，天气风险高</td></tr>
+              <tr><td>7/11 周六</td><td>10:00-13:30</td><td>TSS Earnslaw蒸汽船 + Walter Peak牧场；若航班早，则改成单纯湖边/缆车。</td><td>低</td></tr>
+              <tr><td>7/11 周六</td><td>15:00-17:00</td><td>Skyline缆车，俯瞰皇后镇。之后取行李，按两人航班分别去机场。</td><td>低</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel-section">
+          <h2>吃饭安排</h2>
+          <p class="subtitle" style="font-size: 13px; margin-bottom: 10px;">早餐不用单独安排；这里只列午餐和晚餐。按领导团舒适度优先：午餐顺路、停车方便；晚餐尽量可预订、环境体面。7月旺季和皇后镇热门餐厅建议提前订位。</p>
+          <table class="price-table">
+            <thead>
+              <tr><th>日期</th><th>午餐/休息</th><th>晚餐</th><th>建议</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>7/6 基督城</td><td>航班抵达后看时间，市区简单午餐可选Riverside Market。</td><td>Fiddlesticks，市中心成熟餐厅；或INATI，预算高时安排更正式。</td><td><span class="pill pill-good">稳妥</span><br>第一晚不折腾，适合倒时差。</td></tr>
+              <tr><td>7/7 基督城 -> 特卡波</td><td>Fairlie Bakehouse，路上吃派、咖啡、上洗手间。</td><td>TLV Restaurant & Bar，特卡波镇晚餐。</td><td><span class="pill pill-good">必排</span><br>晚餐建议17:30-18:30，留出观星时间。</td></tr>
+              <tr><td>7/8 特卡波/库克山</td><td>Astro Café 或 Old Mountaineers Café；天气差就回特卡波镇吃。</td><td>优先TLV Restaurant & Bar；若晚留库克山，可用CHAMOIS BAR & GRILL作备选。</td><td><span class="pill pill-ok">看天气</span><br>库克山餐饮选择少，CHAMOIS适合临时备选。</td></tr>
+              <tr><td>7/9 特卡波 -> 皇后镇</td><td>Twizel/Omarama简餐；或Cromwell的Forage Café中途休息。</td><td>Public Kitchen & Bar湖边轻松；预算高选Botswana Butchery；想吃牛排排Flame。</td><td><span class="pill pill-good">订位</span><br>这晚适合安排一顿正式晚餐。</td></tr>
+              <tr><td>7/10 米尔福德</td><td>跟团通常船上午餐/盒餐；走车线可在Te Anau的Sandfly Cafe补给。</td><td>回皇后镇后吃Public Kitchen / Flame；太累就选Fergbaker外带。</td><td><span class="pill pill-warn">别排太满</span><br>米尔福德车程长，晚餐订20:30以后更稳。</td></tr>
+              <tr><td>7/11 皇后镇 -> 奥克兰</td><td>TSS + Walter Peak若订午餐版可解决正餐；否则Fergbaker/Fergburger快速解决。</td><td>奥克兰机场或国际航班餐食。</td><td><span class="pill pill-ok">看航班</span><br>如果13:05飞奥克兰，午餐要简单。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>餐厅优先级</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>地点</th><th>推荐餐厅</th><th>适合</th><th>备注</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>基督城</td><td>Fiddlesticks / INATI / Riverside Market</td><td>第一晚晚餐或轻松午餐</td><td>不放酒店餐厅；Fiddlesticks最稳，INATI更正式。</td></tr>
+              <tr><td>Fairlie</td><td>Fairlie Bakehouse</td><td>路上午餐/咖啡</td><td>基督城去特卡波中途最顺。</td></tr>
+              <tr><td>特卡波</td><td>TLV Restaurant & Bar</td><td>特卡波晚餐</td><td>作为特卡波主晚餐，建议提前订位。</td></tr>
+              <tr><td>库克山</td><td>Old Mountaineers Café / CHAMOIS BAR & GRILL</td><td>午餐、热饮、晚餐备选</td><td>CHAMOIS在Mt Cook Lodge & Motel，适合晚留库克山时备选。</td></tr>
+              <tr><td>Te Anau</td><td>Sandfly Cafe</td><td>米尔福德路上补给</td><td>适合咖啡、三明治、轻食，不建议安排成正式餐。</td></tr>
+              <tr><td>皇后镇</td><td>Public Kitchen / Botswana Butchery / Flame / Fergburger</td><td>湖边晚餐、正式餐、牛排、快速餐</td><td>Public稳妥，Botswana体面，Flame适合肉食，Ferg更适合打卡。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>菜单链接和点餐方向</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>餐厅</th><th>菜单链接</th><th>适合点什么</th><th>备注</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Riverside Market</td><td><a href="https://riverside.nz/" target="_blank" rel="noopener">官网/商户集合</a></td><td>轻食、咖啡、不同摊位简餐</td><td>适合7/6早到后随便吃，不作为正式餐。</td></tr>
+              <tr><td>Fiddlesticks</td><td><a href="https://fiddlesticksbar.co.nz/menus/lunch-dinner/" target="_blank" rel="noopener">Lunch + Dinner Menu</a></td><td>羊肩、鱼、牛排、共享小食</td><td>基督城第一晚稳妥选择。</td></tr>
+              <tr><td>INATI</td><td><a href="https://inati.nz/menu/" target="_blank" rel="noopener">Sample Menu</a></td><td>分享式套餐、精致小盘</td><td>更正式、更贵，适合想安排体面晚餐。</td></tr>
+              <tr><td>Fairlie Bakehouse</td><td><a href="https://apac-cdn.menuweb.menu/storage/media/companies_menu_pdf/83476931/fairlie-bakehouse-fairlie-menu.pdf" target="_blank" rel="noopener">参考菜单PDF</a></td><td>肉派、咖啡、路上简餐</td><td>菜单以现场为准，适合路上休息。</td></tr>
+              <tr><td>TLV Restaurant & Bar</td><td><a href="https://www.tlv.co.nz/menu/" target="_blank" rel="noopener">Dinner Menu</a></td><td>牛排、羊排、鱼、甜品</td><td>特卡波主晚餐，建议提前订位。</td></tr>
+              <tr><td>Astro Café</td><td><a href="https://menuweb.menu/restaurants/lake-tekapo/astro-cafe-6" target="_blank" rel="noopener">参考菜单</a></td><td>咖啡、三明治、甜点</td><td>更偏观景咖啡，不适合正式午餐。</td></tr>
+              <tr><td>Old Mountaineers Café</td><td><a href="https://www.mtcook.com/restaurant" target="_blank" rel="noopener">官网菜单页</a></td><td>汉堡、热食、咖啡</td><td>库克山午餐备选，营业时间要提前确认。</td></tr>
+              <tr><td>CHAMOIS BAR & GRILL</td><td><a href="https://www.hermitage.co.nz/dine/chamois-bar/" target="_blank" rel="noopener">Sample Menu</a></td><td>酒吧烤肉、汉堡、热食</td><td>库克山晚餐备选，在Mt Cook Lodge & Motel。</td></tr>
+              <tr><td>Forage Café Cromwell</td><td><a href="https://forage-cafe.goto-where.com/menu" target="_blank" rel="noopener">参考菜单</a></td><td>汉堡、鱼薯、沙拉、咖啡</td><td>7/9去皇后镇路上休息。</td></tr>
+              <tr><td>Public Kitchen & Bar</td><td><a href="https://lunchtime.co.nz/public-kitchen-bar-auckland/menu/" target="_blank" rel="noopener">参考菜单</a></td><td>鸡肉、牛肉汉堡、共享小食</td><td>皇后镇湖边晚餐，建议提前订。</td></tr>
+              <tr><td>Botswana Butchery</td><td><a href="https://botswanabutchery.nz/queenstown/wp-content/uploads/sites/3/2025/05/BBQ-Autumn-2025-Dinner-Menu.pdf" target="_blank" rel="noopener">Dinner Menu PDF</a></td><td>牛排、羊肉、海鲜、正式晚餐</td><td>预算较高，商务感最强。</td></tr>
+              <tr><td>Flame Bar & Grill</td><td><a href="https://www.flamegrill.co.nz/menu" target="_blank" rel="noopener">官网菜单</a></td><td>肋排、牛排、烤肉、汉堡</td><td>肉食友好，7/9或7/10晚餐可选。</td></tr>
+              <tr><td>Fergburger / Fergbaker</td><td><a href="https://fergburger.com/" target="_blank" rel="noopener">官网菜单</a></td><td>汉堡、派、外带简餐</td><td>适合7/11赶飞机前快速解决。</td></tr>
+              <tr><td>Sandfly Cafe</td><td><a href="https://menuweb.menu/restaurants/te-anau/sandfly-cafe" target="_blank" rel="noopener">参考菜单</a></td><td>咖啡、派、三明治、甜点</td><td>米尔福德路上补给，不排正式餐。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel-section">
+          <h2>住宿清单</h2>
+          <h3>入住/退房/早餐速查</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>酒店</th><th>入住</th><th>退房</th><th>早餐</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Rydges Latimer Christchurch</td><td>15:00</td><td>10:00</td><td>7:00-10:00</td></tr>
+              <tr><td>Peppers Bluewater Resort</td><td>14:00</td><td>10:00</td><td>7:00-10:00</td></tr>
+              <tr><td>Bella Vista Queenstown</td><td>14:00</td><td>11:00</td><td>7:00-10:00</td></tr>
+              <tr><td>Sudima Queenstown Five Mile</td><td>14:00</td><td>11:00</td><td>7:00-10:00，£14/人</td></tr>
+              <tr><td>Queenstown TOP 10 Holiday Park</td><td>14:00</td><td>11:00</td><td>7:00-10:00</td></tr>
+            </tbody>
+          </table>
+          <table class="price-table">
+            <thead>
+              <tr><th>日期</th><th>酒店</th><th>价格/时间</th><th>判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>7/6</td><td>Rydges Latimer Christchurch<br>基督城雷吉斯拉蒂默酒店</td><td>约 ¥971/人/晚；两人约 ¥1942<br>15:00入住，10:00退房</td><td><span class="pill pill-good">保留</span><br>取消观鲸后最稳妥，不赶夜路。</td></tr>
+              <tr><td>7/7-7/8</td><td>Peppers Bluewater Resort<br>佩珀斯蓝水度假酒店</td><td>约 ¥1000/人/晚<br>早餐7:00-10:00；14:00入住，10:00退房</td><td><span class="pill pill-ok">位置好</span><br>连住2晚，方便特卡波和库克山。</td></tr>
+              <tr><td>7/9-7/10</td><td>Bella Vista Queenstown</td><td>约 ¥1480/人/晚<br>14:00入住，11:00退房</td><td><span class="pill pill-good">最推荐</span><br>36 Robins Road，靠近镇中心，衔接TSS、Skyline和晚餐最省心。</td></tr>
+              <tr><td>7/9-7/10</td><td>Sudima Queenstown Five Mile</td><td>£184/晚 + £14早餐<br>约 ¥1690/间/晚起；含2人早餐约 ¥1950/间/晚<br>14:00入住，11:00退房</td><td><span class="pill pill-ok">商务稳</span><br>在Frankton/Five Mile，近机场但离镇中心远，适合有包车或打车。</td></tr>
+              <tr><td>7/9-7/10</td><td>Queenstown TOP 10 Holiday Park</td><td>£133/晚，约 ¥1220/间/晚<br>14:00入住，11:00退房</td><td><span class="pill pill-warn">最省钱</span><br>Arthurs Point，离镇中心约6-7分钟车程，更像度假营地，不太商务。</td></tr>
+            </tbody>
+          </table>
+          <div class="note" style="margin-top: 10px;">注意：英镑按 £1≈¥9.2 粗算。皇后镇三选一里，我更偏向 Bella Vista：贵一点，但对7/10米尔福德早出发、7/11 TSS/Skyline和领导团体面度更稳。</div>
+        </section>
+
+        <section class="panel-section">
+          <h2>航班方案</h2>
+          <h3>奥克兰转新西兰国内段</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>航线</th><th>价格/时长</th><th>适合情况</th><th>判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>奥克兰 -> 基督城</td><td>约 ¥1000 / 1.5小时</td><td>最稳，航班多，包车资源多。</td><td><span class="pill pill-good">首选稳妥</span></td></tr>
+              <tr><td>奥克兰 -> 布伦海姆</td><td>约 ¥1074 / 1.5小时</td><td>取消观鲸后不需要。</td><td><span class="pill pill-no">删除</span></td></tr>
+            </tbody>
+          </table>
+
+          <h3>A：中国 -> 奥克兰去程</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>航线</th><th>舱位/行李</th><th>到达奥克兰</th><th>价格</th><th>判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>上海 -> 奥克兰直飞</td><td>经济舱，2*23kg托运 + 1*7kg手提</td><td>7/6 05:40</td><td>¥4333</td><td><span class="pill pill-good">A首选</span><br>最便宜且直飞，早到方便转基督城。</td></tr>
+              <tr><td>其他中国城市 -> 奥克兰</td><td>经济舱，最多中转一次</td><td>目标7/6抵达</td><td>待比价</td><td><span class="pill pill-ok">备选</span><br>只有出发城市不方便上海时再查。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>B：英国 -> 奥克兰去程，最新截图候选</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>出发</th><th>航司/中转</th><th>到达奥克兰</th><th>价格</th><th>判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>7/4 10:35 MAN</td><td>新西兰航空/新航，经新加坡1小时35分，全程24小时40分，超级经济舱，2*23kg + 1*7kg</td><td>7/5 22:15 AKL</td><td>¥26710</td><td><span class="pill pill-good">B首选</span><br>超经3万内、时间短、行李好，5号到可休整。</td></tr>
+              <tr><td>7/4 10:35 MAN</td><td>新航/新西兰航空，经新加坡1小时35分，全程24小时40分，超级经济舱，35kg + 1*7kg</td><td>7/5 22:15 AKL</td><td>¥26901-27121</td><td><span class="pill pill-ok">可选</span><br>同一条线不同票规/行李，价格接近。</td></tr>
+              <tr><td>7/4 14:15 LHR</td><td>英国航空+新西兰航空，经温哥华4小时55分，全程28小时30分，过境需签证</td><td>7/6 05:45 AKL</td><td>¥26762</td><td><span class="pill pill-warn">不优先</span><br>到达日期完美，但加拿大过境签麻烦。</td></tr>
+              <tr><td>7/4 09:25 LHR</td><td>新航/新西兰航空，经新加坡2小时50分，全程25小时50分</td><td>7/5 22:15 AKL</td><td>¥27253</td><td><span class="pill pill-ok">可选</span><br>伦敦出发方便，价格仍在3万内。</td></tr>
+              <tr><td>7/4 13:00 LGW</td><td>新加坡航空，经新加坡23小时15分，全程46小时15分</td><td>7/6 22:15 AKL</td><td>¥26776-26994</td><td><span class="pill pill-warn">不推荐</span><br>虽然6号到，但新加坡等太久。</td></tr>
+              <tr><td>7/4 11:20 LHR</td><td>新加坡航空，经新加坡1小时05分，全程23小时55分</td><td>7/5 22:15 AKL</td><td>¥30734-30991</td><td><span class="pill pill-no">超预算</span><br>时间最好，但超过3万。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>A/B两人机票专项筛选</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>人员</th><th>去程要求</th><th>优先候选</th><th>预算判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>A：上海 -> 奥克兰</td><td>6号到奥克兰；经济舱；便宜优先。</td><td>上海-奥克兰直飞，7/6 05:40到，2*23kg托运 + 1*7kg手提，¥4333。</td><td><span class="pill pill-good">直接锁定</span><br>目前比中转更香。</td></tr>
+              <tr><td>B：英国 -> 奥克兰</td><td>6号到；5号便宜也可；超级经济舱/商务舱；3万内。</td><td>首选曼城-新加坡-奥克兰超经，7/5 22:15到，¥26710；伦敦出发可选LHR-新加坡-奥克兰约¥27253。</td><td><span class="pill pill-good">超经可行</span><br>商务舱基本超预算。</td></tr>
+              <tr><td>返程第一段</td><td>7/11 皇后镇 -> 奥克兰。</td><td>先买 Queenstown -> Auckland 国内段，再分别接A回中国、B回英国。</td><td><span class="pill pill-good">统一回AKL</span><br>国际转机建议留4小时以上。</td></tr>
+              <tr><td>A返程：奥克兰 -> 中国</td><td>7/11晚返回上海。</td><td>首选东航直飞奥克兰21:00 -> 7/12 05:30浦东T1，¥4390。</td><td><span class="pill pill-good">A首选</span><br>比中转贵约¥990，但最省心。</td></tr>
+              <tr><td>B返程：奥克兰 -> 英国</td><td>7/11晚返回伦敦，超级经济舱。</td><td>新西兰航空奥克兰23:55 -> 新加坡转2小时15分 -> 7/12 15:45伦敦LHR T2，¥16490。</td><td><span class="pill pill-good">B首选</span><br>和去程同体系，行李2*23kg。</td></tr>
+            </tbody>
+          </table>
+          <h3>7/11 皇后镇 -> 奥克兰返程第一段</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>航班</th><th>时长</th><th>价格</th><th>判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Jetstar 09:45 -> 11:35</td><td>1小时50分</td><td>¥1098</td><td><span class="pill pill-warn">偏早</span><br>会压缩7/11皇后镇项目。</td></tr>
+              <tr><td>Jetstar 10:50 -> 12:40</td><td>1小时50分</td><td>¥1098</td><td><span class="pill pill-ok">便宜</span><br>若只保留早晨轻活动可选。</td></tr>
+              <tr><td>Air NZ 12:10 -> 14:00</td><td>1小时50分</td><td>¥1286</td><td><span class="pill pill-good">推荐</span><br>能留上午活动，接A/B国际段都很稳。</td></tr>
+              <tr><td>Air NZ 13:05 -> 14:55</td><td>1小时50分</td><td>¥1286</td><td><span class="pill pill-good">推荐</span><br>最适合7/11上午TSS或Skyline后返奥克兰。</td></tr>
+              <tr><td>Jetstar 17:30 -> 19:20</td><td>1小时50分</td><td>¥1264</td><td><span class="pill pill-warn">只适合B</span><br>接B的23:55国际段还行；接A 21:00东航太紧。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>A：奥克兰 -> 中国返程</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>航班</th><th>时长/行李</th><th>价格</th><th>判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>东航 21:00 AKL -> 7/12 05:30 浦东T1</td><td>12小时30分，波音777-300，行李3件</td><td>¥4390</td><td><span class="pill pill-good">A首选</span><br>直飞，价格和时间都好。</td></tr>
+              <tr><td>新西兰航空 22:45 AKL -> 7/12 06:55 浦东T2</td><td>12小时10分，波音787</td><td>¥5027</td><td><span class="pill pill-ok">可选</span><br>晚一点起飞，价格略高。</td></tr>
+              <tr><td>中国国航共享 22:45 AKL -> 7/12 06:55 浦东T2</td><td>12小时10分，波音787</td><td>¥7571</td><td><span class="pill pill-no">不建议</span><br>同时间贵很多。</td></tr>
+              <tr><td>南航 21:20 AKL -> 广州转 -> 7/12 09:20/10:20 虹桥T2</td><td>16-17小时，广州转1小时55分/2小时55分，行李3件</td><td>¥3400</td><td><span class="pill pill-ok">最省钱</span><br>便宜约¥990，但要中转。</td></tr>
+              <tr><td>南航 09:00 AKL -> 广州转 -> 22:20 虹桥T2</td><td>17小时20分，广州转3小时20分</td><td>¥3400</td><td><span class="pill pill-warn">不适合</span><br>太早离开，影响7/11行程。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>B：奥克兰 -> 英国返程</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>航班</th><th>舱位/行李</th><th>价格</th><th>判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>新西兰航空 23:55 AKL -> 新加坡转2小时15分 -> 7/12 15:45 LHR T2</td><td>超级经济舱，2*23kg + 1*7kg，全程26小时50分</td><td>¥16490</td><td><span class="pill pill-good">B首选</span><br>晚班机，能保留7/11皇后镇上午活动。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>机票小计</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>人员</th><th>去程</th><th>返程</th><th>机票小计</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>A</td><td>上海 -> 奥克兰 ¥4333 + 奥克兰 -> 基督城约¥1000</td><td>皇后镇 -> 奥克兰约¥1286 + 奥克兰 -> 上海¥4390</td><td><span class="pill pill-good">约 ¥11009</span></td></tr>
+              <tr><td>B</td><td>英国 -> 奥克兰超经¥26710 + 奥克兰 -> 基督城约¥1000</td><td>皇后镇 -> 奥克兰约¥1286 + 奥克兰 -> 伦敦超经¥16490</td><td><span class="pill pill-warn">约 ¥45486</span></td></tr>
+            </tbody>
+          </table>
+          <div class="note" style="margin-top: 10px;">返程统一逻辑：7/11 从皇后镇先飞奥克兰，再分别接中国和英国国际段。A建议不要选17:30到奥克兰的国内段，接21:00东航只剩约1小时40分，风险太高。</div>
+        </section>
+
+        <section class="panel-section">
+          <h2>省时替代方案</h2>
+          <h3>推荐省时版</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>日期</th><th>安排</th><th>省时点</th><th>代价/风险</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>7/6</td><td>抵达基督城后直接休息。</td><td>取消凯库拉后不需要夜路赶车。</td><td>最稳妥。</td></tr>
+              <tr><td>7/7</td><td>基督城轻松出发去特卡波，下午湖边和教堂。</td><td>比凯库拉版少一整天长途压力。</td><td>观鲸取消。</td></tr>
+              <tr><td>7/8</td><td>特卡波、好牧羊人教堂、约翰山、普卡基湖、库克山，回特卡波住。</td><td>不赶去皇后镇，库克山更从容。</td><td>无。</td></tr>
+              <tr><td>7/9</td><td>特卡波/Twizel -> 库克山补拍 -> 皇后镇，下午/傍晚Skyline。</td><td>把皇后镇轻项目放到抵达日。</td><td>若道路天气差，Skyline顺延。</td></tr>
+              <tr><td>7/10</td><td>米尔福德 Fly-Cruise-Fly，约4-5小时；或 Coach-Cruise-Fly，约7:00-16:00。</td><td>比全程坐车往返少很多时间。</td><td>贵；7月飞行最怕天气取消，需有备选。</td></tr>
+              <tr><td>7/11</td><td>TSS蒸汽船+瓦尔特峰牧场，晚机返程。</td><td>不赶路，行程体面。</td><td>航班太早则要二选一。</td></tr>
+            </tbody>
+          </table>
+          <h3>机场选择</h3>
+          <ul>
+            <li>最稳：基督城进、皇后镇出。航班多、接送简单。</li>
+            <li>取消观鲸后：基督城进、皇后镇出最顺，布伦海姆不再需要。</li>
+            <li>当前路线主打特卡波、库克山、米尔福德、TSS、Skyline，是最不折腾的南岛精华线。</li>
+          </ul>
+        </section>
+
+        <section class="panel-section">
+          <h2>不包车怎么走</h2>
+          <h3>取消观鲸后的交通判断</h3>
+          <ul>
+            <li>不再需要凯库拉、海豹点、切维奥特和布伦海姆。</li>
+            <li>7/6住基督城，7/7出发去特卡波，路线会顺很多。</li>
+            <li>仍建议7/7-7/9包车，因为特卡波、普卡基湖、库克山和沿途休息点需要灵活停车。</li>
+          </ul>
+          <h3>交通方案对比</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>方案</th><th>怎么走</th><th>优点</th><th>问题</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>全包车</td><td>7/7-7/10包车，7/11可只安排送机或当地用车。</td><td>最稳，能停普卡基湖、库克山、吃饭休息点。</td><td>两人分摊贵。</td></tr>
+              <tr><td>半包车</td><td>7/7-7/9包车，7/10米尔福德改报当地团，7/11皇后镇自行活动+打车。</td><td>性价比最好，保留最需要司机的主线。</td><td>需要自己衔接米尔福德团和返程航班。</td></tr>
+              <tr><td>不包车</td><td>基督城-特卡波/皇后镇靠InterCity或一日转场团；米尔福德报一日团。</td><td>便宜。</td><td>班次少、不能随停，库克山和普卡基湖灵活性差。</td></tr>
+              <tr><td>最省时</td><td>米尔福德飞去飞回。</td><td>少坐车。</td><td>贵，且7月天气取消风险高。</td></tr>
+            </tbody>
+          </table>
+          <h3>我的建议</h3>
+          <ul>
+            <li>建议选“半包车”：7/7-7/9包车，7/10米尔福德用当地大巴/飞机团，7/11皇后镇自行安排。</li>
+            <li>不建议完全不包车，因为库克山、普卡基湖、路上休息都需要灵活停车。</li>
+          </ul>
+          <h3>基督城 -> 特卡波 -> 库克山这段</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>方案</th><th>时间</th><th>可行性</th><th>判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>包车/专车</td><td>基督城到特卡波约3-3.5小时，特卡波到库克山约1.5小时</td><td>最高</td><td><span class="pill pill-good">推荐</span><br>能停Fairlie、普卡基湖、库克山观景点。</td></tr>
+              <tr><td>公交/城际巴士</td><td>可到特卡波/皇后镇，但班次限制大</td><td>中</td><td><span class="pill pill-warn">省钱</span><br>不能灵活停湖边和库克山，体验打折。</td></tr>
+              <tr><td>一日转场团</td><td>基督城到皇后镇经特卡波/库克山</td><td>中高</td><td><span class="pill pill-ok">可替代</span><br>适合不包车，但7/7-7/8连住特卡波会被打乱。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel-section">
+          <h2>和旅行团确认</h2>
+          <ul>
+            <li>7月6日两人航班不同，接机是否能分开安排，是否额外收费。</li>
+            <li>7月7-9日是否能按基督城-特卡波-库克山-皇后镇主线包车，不安排购物店。</li>
+            <li>7月11日不包车时，皇后镇酒店寄存行李和分批送机如何安排。</li>
+            <li>可选景点能加哪些，哪些会明显增加车程或费用。</li>
+            <li>是否含 Skyline、TSS 蒸汽船、瓦尔特峰农场、米尔福德游船。</li>
+            <li>7 月是否配雪链，米尔福德封路如何改期或退款。</li>
+            <li>住宿是否在基督城/特卡波/皇后镇市区或湖边，避免住太偏。</li>
+            <li>报价是否含接送机、司机小费、早餐、正餐和行李服务。</li>
+          </ul>
+        </section>
+
+        <section class="panel-section">
+          <h2>领导团热门活动推荐</h2>
+          <h3>建议锁定</h3>
+          <ul>
+            <li>米尔福德峡湾 Coach + Cruise：南岛顶级项目，7/10固定安排。</li>
+            <li>TSS Earnslaw + Walter Peak Farm：7/11安排，船、湖景、农场一次解决。</li>
+            <li>Skyline Queenstown 缆车：7/11下午或傍晚，性价比高，天气好很值。</li>
+            <li>特卡波观星：7/8晚上看天气，建议选可取消或有室内替代的产品。</li>
+          </ul>
+          <h3>预算够可加</h3>
+          <ul>
+            <li>International Antarctic Centre：7/6航班空档可加，可轻松看到小蓝企鹅救护展示。</li>
+            <li>Onsen Hot Pools：冬天很火，但本次时间紧，只适合7/11航班很晚时加。</li>
+            <li>Gibbston Valley 酒庄：适合拍照、轻松用餐或品酒，但需牺牲7/11部分项目。</li>
+            <li>皇后镇湖边正式晚餐：比刺激项目更适合商务/领导出行氛围。</li>
+          </ul>
+          <h3>这次谨慎</h3>
+          <ul>
+            <li>Shotover Jet、蹦极、高空跳伞：太刺激，不适合这次领导团。</li>
+            <li>滑雪：除非大家明确想滑，否则 7 月新手摔倒风险和装备折腾都偏高。</li>
+            <li>直升机/冰川飞行：很震撼但贵，且 7 月天气取消风险高。</li>
+            <li>奥马鲁小蓝企鹅：很可爱，但夜间观看会大幅改变路线，本次不建议硬塞。</li>
+            <li>西海岸冰川、但尼丁、瓦纳卡深度：都好，但7月6-11日时间不够。</li>
+          </ul>
+        </section>
+
+        <section class="panel-section">
+          <h2>价格清单</h2>
+          <p class="subtitle" style="font-size: 13px; margin-bottom: 10px;">粗算按 1 NZD ≈ 4.1 RMB。为避免预算波动过大，主合计按 Bella Vista Queenstown + 常规餐标 + 已知包车价锁定；更便宜或更贵的酒店只作为备选，不拉大主预算区间。</p>
+          <h3>本版总预算粗算</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>项目</th><th>按两人估算</th><th>单人约</th><th>说明</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>7/7-7/9 半包车</td><td>¥9600</td><td>¥4800</td><td>包车一天 ¥3200，3天最划算。</td></tr>
+              <tr><td>住宿锁定版</td><td>约 ¥11860</td><td>约 ¥5930</td><td>Rydges按¥971/人/晚；Peppers按¥1000/人/晚；皇后镇按Bella Vista ¥1480/人/晚估算。</td></tr>
+              <tr><td>A线米尔福德大巴+船</td><td>约 ¥2400</td><td>约 ¥1200</td><td>省钱稳妥，但全天车程很长。</td></tr>
+              <tr><td>B线米尔福德飞机+船</td><td>约 ¥6350</td><td>约 ¥3175</td><td>省时舒适，但天气取消风险高；按中位数锁预算。</td></tr>
+              <tr><td>TSS+牧场、Skyline、观星</td><td>约 ¥2780</td><td>约 ¥1390</td><td>观星按天气和可取消政策预订。</td></tr>
+              <tr><td>餐饮和零散打车</td><td>约 ¥4800</td><td>约 ¥2400</td><td>按中午简餐、晚上较正式餐厅的舒适口径估算。</td></tr>
+              <tr><td>A线合计，不含机票</td><td>约 ¥31440</td><td>约 ¥15720</td><td>推荐锁定预算；另留 ¥1000/人机动金即可。</td></tr>
+              <tr><td>B线合计，不含机票</td><td>约 ¥35390</td><td>约 ¥17695</td><td>比A线贵约 ¥1975/人，主要买米尔福德省时。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>花费清单表</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>类别</th><th>项目</th><th>两人合计</th><th>单人约</th><th>是否计入地接总费用</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>住宿</td><td>7/6 Rydges Latimer Christchurch</td><td>约 ¥1942</td><td>约 ¥971</td><td><span class="pill pill-good">计入</span></td></tr>
+              <tr><td>住宿</td><td>7/7-7/8 Peppers Bluewater Resort</td><td>约 ¥4000</td><td>约 ¥2000</td><td><span class="pill pill-good">计入</span></td></tr>
+              <tr><td>住宿</td><td>7/9-7/10 皇后镇酒店：Bella Vista Queenstown</td><td>约 ¥5920</td><td>约 ¥2960</td><td><span class="pill pill-good">计入</span></td></tr>
+              <tr><td>交通</td><td>7/7-7/9 半包车，¥3200/天</td><td>¥9600</td><td>¥4800</td><td><span class="pill pill-good">计入</span></td></tr>
+              <tr><td>活动</td><td>7/10 米尔福德 A线大巴+游船</td><td>约 ¥2400</td><td>约 ¥1200</td><td><span class="pill pill-ok">二选一</span></td></tr>
+              <tr><td>活动</td><td>7/10 米尔福德 B线飞机+游船</td><td>约 ¥6350</td><td>约 ¥3175</td><td><span class="pill pill-ok">二选一</span></td></tr>
+              <tr><td>活动</td><td>TSS蒸汽船+Walter Peak、Skyline、特卡波观星</td><td>约 ¥2780</td><td>约 ¥1390</td><td><span class="pill pill-good">计入</span></td></tr>
+              <tr><td>餐饮/市内交通</td><td>餐饮、零散打车、行李寄存等</td><td>约 ¥4800</td><td>约 ¥2400</td><td><span class="pill pill-good">计入</span></td></tr>
+              <tr><td>机动金</td><td>天气改期、餐饮超支、小费、临时接送</td><td>建议 ¥2000</td><td>建议 ¥1000</td><td><span class="pill pill-warn">预留，不进基础合计</span></td></tr>
+              <tr><td>地接小计</td><td>A线米尔福德大巴方案，不含机票</td><td>约 ¥31440</td><td>约 ¥15720</td><td><span class="pill pill-good">地接总费用</span></td></tr>
+              <tr><td>地接小计</td><td>B线米尔福德飞机方案，不含机票</td><td>约 ¥35390</td><td>约 ¥17695</td><td><span class="pill pill-good">地接总费用</span></td></tr>
+              <tr><td>机票</td><td>A机票：上海->奥克兰、奥克兰->基督城、皇后镇->奥克兰、奥克兰->上海</td><td>约 ¥11009</td><td>约 ¥11009</td><td><span class="pill pill-warn">单列，不计入地接总费用</span></td></tr>
+              <tr><td>机票</td><td>B机票：英国->奥克兰超经、奥克兰->基督城、皇后镇->奥克兰、奥克兰->伦敦超经</td><td>约 ¥45486</td><td>约 ¥45486</td><td><span class="pill pill-warn">单列，不计入地接总费用</span></td></tr>
+            </tbody>
+          </table>
+
+          <h3>主路线和建议项目</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>项目</th><th>NZD</th><th>约人民币</th><th>建议</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>大教堂广场、好牧羊人教堂、特卡波湖、普卡基湖</td><td>0</td><td>0</td><td><span class="pill pill-good">必留</span></td></tr>
+              <tr><td>约翰山 Astro Café 上山路费</td><td>14/车</td><td>约 20/人</td><td><span class="pill pill-good">很值</span></td></tr>
+              <tr><td>特卡波观星</td><td>109-159/人</td><td>约 450-650/人</td><td><span class="pill pill-ok">看天气</span></td></tr>
+              <tr><td>库克山 25 分钟直升机含着陆</td><td>379/人</td><td>约 1,550/人</td><td><span class="pill pill-ok">可加</span></td></tr>
+              <tr><td>库克山冰川直升机徒步</td><td>899/人</td><td>约 3,690/人</td><td><span class="pill pill-no">不建议</span></td></tr>
+              <tr><td>鹿公园 Deer Park Heights</td><td>75/车</td><td>约 155/人</td><td><span class="pill pill-good">领导友好</span></td></tr>
+              <tr><td>TSS 蒸汽船 + Walter Peak 农场</td><td>139/人起</td><td>约 570/人起</td><td><span class="pill pill-good">必留</span></td></tr>
+              <tr><td>Walter Peak BBQ 午/晚餐版</td><td>169-189/人起</td><td>约 690-775/人起</td><td><span class="pill pill-ok">更体面</span></td></tr>
+              <tr><td>皇后镇 Skyline 缆车</td><td>66/人</td><td>约 270/人</td><td><span class="pill pill-good">必留</span></td></tr>
+            </tbody>
+          </table>
+
+          <h3>交通和分线费用</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>项目</th><th>NZD</th><th>约人民币</th><th>建议</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>基督城-皇后镇经特卡波/库克山一日转场团</td><td>约 385-395/人</td><td>约 1,580-1,620/人</td><td><span class="pill pill-ok">替代包车</span></td></tr>
+              <tr><td>米尔福德 A线 Coach + Cruise</td><td>292/人起</td><td>约 1,200/人起</td><td><span class="pill pill-good">稳妥</span></td></tr>
+              <tr><td>米尔福德 B线 Fly-Cruise-Fly</td><td>749-789/人起</td><td>约 3,070-3,235/人起</td><td><span class="pill pill-ok">省时看天气</span></td></tr>
+              <tr><td>米尔福德 Coach-Cruise-Fly</td><td>854-904/人起</td><td>约 3,500-3,705/人起</td><td><span class="pill pill-ok">折中但贵</span></td></tr>
+              <tr><td>皇后镇当地打车/机场接送</td><td>按距离计费</td><td>需现场估算</td><td><span class="pill pill-ok">7/11适用</span></td></tr>
+            </tbody>
+          </table>
+
+          <h3>可选加项</h3>
+          <table class="price-table">
+            <thead>
+              <tr><th>项目</th><th>NZD</th><th>约人民币</th><th>建议</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Cloudy Bay 普通品鉴</td><td>30-45/人</td><td>约 125-185/人</td><td><span class="pill pill-warn">绕路</span></td></tr>
+              <tr><td>Cloudy Bay First Taste 私人游</td><td>3 人约 600</td><td>约 820/人</td><td><span class="pill pill-warn">贵且绕路</span></td></tr>
+              <tr><td>国际南极中心</td><td>74/人</td><td>约 300/人</td><td><span class="pill pill-ok">航班空档</span></td></tr>
+              <tr><td>Puzzling World 迷宫世界</td><td>32.5/人</td><td>约 135/人</td><td><span class="pill pill-warn">可删</span></td></tr>
+              <tr><td>奥马鲁小蓝企鹅</td><td>47-63/人</td><td>约 190-260/人</td><td><span class="pill pill-ok">时间多可加</span></td></tr>
+              <tr><td>米尔福德峡湾 Coach + Cruise</td><td>235-345/人起</td><td>约 960-1,415/人起</td><td><span class="pill pill-good">很经典</span></td></tr>
+              <tr><td>Onsen Hot Pools 温泉</td><td>约 205-225/池</td><td>约 280-310/人</td><td><span class="pill pill-ok">提前订</span></td></tr>
+              <tr><td>霍比特人村</td><td>130/人</td><td>约 530/人</td><td><span class="pill pill-ok">北岛才加</span></td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel-section">
+          <div class="note">冬季建议：这张地图用于比价和沟通，不替代当天导航。7 月日照短，山区天气变化快，米尔福德峡湾这天优先跟团大巴或中文包车。</div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script>
+    const colors = {
+      sight: "#d92d20",
+      optional: "#64748b",
+      supply: "#0e9384",
+      food: "#d97706",
+      hotel: "#7c3aed",
+      route: "#2563eb",
+      winter: "#0f766e"
+    };
+
+    const map = L.map("map", {
+      scrollWheelZoom: true,
+      zoomControl: true
+    }).setView([-44.55, 169.25], 7);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const layers = {
+      sights: L.layerGroup().addTo(map),
+      optional: L.layerGroup().addTo(map),
+      supplies: L.layerGroup().addTo(map),
+      food: L.layerGroup().addTo(map),
+      hotels: L.layerGroup().addTo(map),
+      route: L.layerGroup().addTo(map),
+      milford: L.layerGroup().addTo(map)
+    };
+
+    const typeText = {
+      sight: "必去景点",
+      optional: "可选景点",
+      supply: "补给/休息",
+      food: "吃饭",
+      hotel: "住宿",
+      route: "路线节点",
+      winter: "米尔福德日线"
+    };
+
+    const routePoints = [
+      [-43.4894, 172.5322],
+      [-43.5309, 172.6378],
+      [-44.0900, 171.2440],
+      [-44.1004, 170.8281],
+      [-44.0047, 170.4771],
+      [-43.9864, 170.4645],
+      [-44.1692, 170.1790],
+      [-43.7351, 170.0964],
+      [-44.2550, 170.0970],
+      [-44.4860, 169.9654],
+      [-45.0384, 169.2001],
+      [-45.0312, 168.6626]
+    ];
+
+    const glenorchyRoute = [
+      [-45.0312, 168.6626],
+      [-44.9850, 168.6040],
+      [-44.9190, 168.5010],
+      [-44.8624, 168.3721],
+      [-44.8505, 168.3880]
+    ];
+
+    const milfordRoute = [
+      [-45.0312, 168.6626],
+      [-45.3190, 168.3800],
+      [-45.4145, 167.7180],
+      [-45.4180, 167.6600],
+      [-45.2590, 167.4560],
+      [-44.9400, 167.9230],
+      [-44.6716, 167.9256]
+    ];
+
+    const milfordFlightRoute = [
+      [-45.0312, 168.6626],
+      [-44.6716, 167.9256]
+    ];
+
+    L.polyline(routePoints, {
+      color: colors.route,
+      weight: 5,
+      opacity: 0.88
+    }).addTo(layers.route).bindTooltip("主线：基督城 -> 特卡波 -> 普卡基湖 -> 库克山 -> 皇后镇");
+
+    L.polyline(glenorchyRoute, {
+      color: colors.route,
+      weight: 4,
+      opacity: 0.75,
+      dashArray: "8 8"
+    }).addTo(layers.optional).bindTooltip("可选：格林诺奇半日线，本次时间偏紧不默认安排");
+
+    L.polyline(milfordRoute, {
+      color: colors.winter,
+      weight: 5,
+      opacity: 0.84,
+      dashArray: "10 7"
+    }).addTo(layers.milford).bindTooltip("7/10 米尔福德峡湾一日线：冬季建议跟团/包车");
+
+    L.polyline(milfordFlightRoute, {
+      color: "#7c3aed",
+      weight: 4,
+      opacity: 0.76,
+      dashArray: "4 10"
+    }).addTo(layers.milford).bindTooltip("7/10 B线：皇后镇飞米尔福德，省时但看天气");
+
+    function pinIcon(type) {
+      return L.divIcon({
+        className: "",
+        html: `<div class="pin-icon" style="background:${colors[type]}"></div>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+        popupAnchor: [0, -10]
+      });
+    }
+
+    function numberIcon(number) {
+      return L.divIcon({
+        className: "",
+        html: `<div class="number-icon">${number}</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -12]
+      });
+    }
+
+    function popupHtml(item) {
+      return `
+        <div>
+          <div class="popup-title">${item.name}</div>
+          <span class="popup-type" style="background:${colors[item.type]}">${typeText[item.type]}</span>
+          <div>${item.desc}</div>
+          <p class="popup-tip">${item.tip}</p>
+        </div>
+      `;
+    }
+
+    const nodes = [
+      { name: "7/6 基督城机场 Christchurch Airport", lat: -43.4894, lng: 172.5322, day: 6, desc: "两人航班不同，抵达后在基督城酒店会合。", tip: "取消观鲸后，不需要赶夜路去凯库拉。", layer: "route" },
+      { name: "7/7-7/8 特卡波住宿", lat: -44.0047, lng: 170.4771, day: 7, desc: "住Peppers Bluewater Resort，连住2晚。", tip: "方便特卡波、约翰山、普卡基湖和库克山。", layer: "route" },
+      { name: "7/8 特卡波 Lake Tekapo", lat: -44.0047, lng: 170.4771, day: 8, desc: "特卡波湖、好牧羊人教堂、约翰山和普卡基湖。", tip: "晚上天气好可观星。", layer: "route" },
+      { name: "7/9 库克山 Aoraki / Mount Cook", lat: -43.7351, lng: 170.0964, day: 9, desc: "雪山和冰川湖精华，适合短徒步/观景；午后去皇后镇。", tip: "轻松看雪山即可，不建议冰川徒步。", layer: "route" },
+      { name: "7/9-7/11 皇后镇 Queenstown", lat: -45.0312, lng: 168.6626, day: 11, desc: "住2晚，安排米尔福德、TSS蒸汽船、Skyline和返程。", tip: "尽量住市区或湖边，11日寄存行李。", layer: "route" }
+    ];
+
+    nodes.forEach((item) => {
+      L.marker([item.lat, item.lng], { icon: numberIcon(item.day) })
+        .bindPopup(popupHtml({ ...item, type: "route" }))
+        .bindTooltip(item.name.replace(/^D\d(?:-D\d)?\s/, ""))
+        .addTo(layers.route);
+    });
+
+    const points = [
+      { type: "sight", layer: "sights", name: "基督城机场", lat: -43.4894, lng: 172.5322, desc: "7月6日两人分别抵达，A经奥克兰转机，B建议直飞基督城。", tip: "航班不同，建议分开接机或酒店会合。"},
+      { type: "sight", layer: "sights", name: "大教堂广场", lat: -43.5309, lng: 172.6378, desc: "基督城市中心地标，适合短暂停留拍照。", tip: "7/6早到或7/8出城前安排即可。"},
+      { type: "sight", layer: "sights", name: "好牧羊人教堂", lat: -44.0040, lng: 170.4777, desc: "特卡波标志性景点，湖景和雪山背景。", tip: "7/8下午到达后拍照。"},
+      { type: "sight", layer: "sights", name: "约翰山 / Astro Café", lat: -43.9864, lng: 170.4645, desc: "俯瞰特卡波湖和麦肯齐盆地，天气好很值。", tip: "7/8下午安排，注意道路和营业时间。"},
+      { type: "sight", layer: "sights", name: "普卡基湖 Lake Pukaki", lat: -44.1707, lng: 170.1781, desc: "通往库克山路上最漂亮的蓝色湖泊。", tip: "适合停车拍照和短休息。"},
+      { type: "sight", layer: "sights", name: "Tasman Lake", lat: -43.6923, lng: 170.1861, desc: "库克山区域冰川湖，冬季也很有气势。", tip: "看路况和体力安排短走。"},
+      { type: "sight", layer: "sights", name: "瓦纳卡孤独的树", lat: -44.6953, lng: 169.1178, desc: "瓦纳卡湖边经典拍照点。", tip: "本次主线不顺路，时间多才加。"},
+      { type: "sight", layer: "sights", name: "Skyline Queenstown", lat: -45.0287, lng: 168.6592, desc: "俯瞰皇后镇和瓦卡蒂普湖。", tip: "7/11下午或傍晚安排。"},
+      { type: "sight", layer: "sights", name: "TSS Earnslaw 码头", lat: -45.0334, lng: 168.6598, desc: "乘蒸汽船去瓦尔特峰农场。", tip: "7/11上午/中午安排，需看航班时间。"},
+      { type: "sight", layer: "sights", name: "瓦尔特峰农场", lat: -45.0714, lng: 168.4899, desc: "农场体验，适合第一次来新西兰。", tip: "通常和 TSS 船一起订。"},
+      { type: "sight", layer: "sights", name: "Bennett's Bluff Lookout", lat: -44.9190, lng: 168.5010, desc: "皇后镇去格林诺奇路上的湖景观景点。", tip: "本次不默认安排，7/11航班很晚才考虑。"},
+      { type: "sight", layer: "sights", name: "格林诺奇码头", lat: -44.8505, lng: 168.3880, desc: "湖山风景，非常适合拍照。", tip: "本次时间偏紧，可作为备选。"},
+      { type: "sight", layer: "sights", name: "米尔福德峡湾", lat: -44.6716, lng: 167.9256, desc: "峡湾游船、瀑布、雪山，是南岛顶级景点。", tip: "7/10跟团/包车，不建议冬季自驾。"},
+
+      { type: "optional", layer: "optional", name: "基督城植物园", lat: -43.5307, lng: 172.6208, desc: "落地时间早可在市区轻松走走。", tip: "适合7/6早到航班，不建议为它压缩特卡波时间。"},
+      { type: "optional", layer: "optional", name: "International Antarctic Centre", lat: -43.4880, lng: 172.5429, desc: "基督城机场附近的南极主题馆，有小蓝企鹅救护展示。", tip: "若想轻松看企鹅，7/6航班空档可加；不等同奥马鲁野外归巢。"},
+      { type: "optional", layer: "optional", name: "Lake Alexandrina", lat: -43.9147, lng: 170.4703, desc: "特卡波附近安静小湖，人少，适合摄影。", tip: "7/8或7/9清晨可加，需看天气和路况。"},
+      { type: "optional", layer: "optional", name: "Mt John / Astro Café", lat: -43.9864, lng: 170.4645, desc: "特卡波俯瞰湖区的位置，天气好很值。", tip: "上山道路和营业时间要提前查。"},
+      { type: "optional", layer: "optional", name: "Hooker Valley Track 起点", lat: -43.7186, lng: 170.0930, desc: "库克山最经典步道入口。", tip: "2026 年 7 月务必临近出发查 DOC 开放状态。"},
+      { type: "optional", layer: "optional", name: "Clay Cliffs", lat: -44.5797, lng: 170.2033, desc: "奥玛拉玛附近的尖塔状地貌，拍照有荒野感。", tip: "会绕路，7/9时间宽裕才加。"},
+      { type: "optional", layer: "optional", name: "Lindis Pass Lookout", lat: -44.5882, lng: 169.6426, desc: "库克山/奥玛拉玛去瓦纳卡路上的山口景观。", tip: "冬季停车注意结冰和风大。"},
+      { type: "optional", layer: "optional", name: "Rippon Vineyard", lat: -44.7014, lng: 169.1078, desc: "瓦纳卡湖边酒庄景观非常漂亮。", tip: "不喝酒也可看景，需预约/看开放时间。"},
+      { type: "optional", layer: "optional", name: "Puzzling World", lat: -44.6817, lng: 169.1598, desc: "瓦纳卡的迷宫和错觉馆，偏亲子娱乐。", tip: "本次不顺路，也不太适合领导团。"},
+      { type: "optional", layer: "optional", name: "Kawarau Bridge Bungy", lat: -45.0069, lng: 168.8946, desc: "皇后镇蹦极发源地，适合路过看看，不建议参加。", tip: "领导团不推荐跳，最多停车 10-15 分钟看一眼。"},
+      { type: "optional", layer: "optional", name: "Onsen Hot Pools", lat: -44.9925, lng: 168.6767, desc: "皇后镇热门温泉，冬天体验很好。", tip: "非常热门，想去必须提前订。"},
+      { type: "optional", layer: "optional", name: "Coronet Peak", lat: -44.9270, lng: 168.7360, desc: "皇后镇附近雪场，可看雪景，但不建议领导团新手滑雪。", tip: "除非大家明确想滑，否则不加。"},
+      { type: "optional", layer: "optional", name: "The Remarkables Ski Area", lat: -45.0541, lng: 168.8140, desc: "皇后镇另一大雪场，雪景强，但活动强度高。", tip: "领导团更适合缆车、温泉、农场和峡湾。"},
+      { type: "optional", layer: "optional", name: "Mirror Lakes", lat: -45.0112, lng: 168.0665, desc: "米尔福德路上的镜湖短停点。", tip: "7/10跟团/包车通常会视天气停靠。"},
+      { type: "optional", layer: "optional", name: "Eglinton Valley", lat: -44.9433, lng: 168.0256, desc: "米尔福德路上开阔山谷景观。", tip: "冬季风景漂亮，但停不停看司机安排。"},
+      { type: "optional", layer: "optional", name: "Lake Marian Track 起点", lat: -44.7713, lng: 168.0328, desc: "米尔福德路上较进阶徒步入口。", tip: "7月冬季且时间有限，不建议硬加。"},
+      { type: "optional", layer: "optional", name: "奥马鲁 Oamaru", lat: -45.0976, lng: 170.9704, desc: "蓝企鹅和维多利亚建筑。", tip: "本次7月6-11日不建议硬塞，除非砍掉米尔福德或皇后镇项目。"},
+      { type: "optional", layer: "optional", name: "摩拉基大圆石", lat: -45.3473, lng: 170.8267, desc: "海滩上的圆形巨石。", tip: "适合接但尼丁海岸线，不适合当前7月6-11日线。"},
+      { type: "optional", layer: "optional", name: "但尼丁 Dunedin", lat: -45.8788, lng: 170.5028, desc: "苏格兰风情城市、火车站、奥塔哥半岛。", tip: "至少多 1-2 天再加。"},
+      { type: "optional", layer: "optional", name: "Franz Josef Glacier", lat: -43.3870, lng: 170.1830, desc: "西海岸冰川小镇，直升机看冰川很有名。", tip: "7月天气不稳定，本次不建议绕西海岸。"},
+      { type: "optional", layer: "optional", name: "Fox Glacier", lat: -43.4644, lng: 170.0170, desc: "西海岸冰川区，靠近马瑟森湖。", tip: "适合 10 天以上路线，天气取消率要考虑。"},
+
+      { type: "supply", layer: "supplies", name: "Fairlie 休息点", lat: -44.1004, lng: 170.8281, desc: "基督城到特卡波路上最适合停车休息的小镇。", tip: "买派、咖啡、上洗手间。"},
+      { type: "supply", layer: "supplies", name: "普卡基湖游客中心", lat: -44.1692, lng: 170.1790, desc: "拍照、洗手间、简单补给。", tip: "7/9去库克山前停。"},
+      { type: "supply", layer: "supplies", name: "Cromwell 补给点", lat: -45.0384, lng: 169.2001, desc: "瓦纳卡到箭镇/皇后镇之间的休息点。", tip: "适合咖啡和水果补给。"},
+      { type: "supply", layer: "supplies", name: "Te Anau 中转", lat: -45.4145, lng: 167.7180, desc: "皇后镇去米尔福德路上的关键补给地。", tip: "7/10上洗手间、买热饮。"},
+
+      { type: "food", layer: "food", name: "Fairlie Bakehouse", lat: -44.1009, lng: 170.8278, desc: "南岛路上很有名的派店。", tip: "7/8午餐/下午茶。"},
+      { type: "food", layer: "food", name: "Fiddlesticks", lat: -43.5311, lng: 172.6334, desc: "基督城市中心餐厅，适合第一晚正式但不太折腾的晚餐。", tip: "7/6晚餐可订。"},
+      { type: "food", layer: "food", name: "INATI", lat: -43.5327, lng: 172.6360, desc: "基督城更正式的晚餐选择。", tip: "预算高、想安排体面晚餐时选。"},
+      { type: "food", layer: "food", name: "Riverside Market", lat: -43.5329, lng: 172.6341, desc: "基督城市区轻松午餐/简餐集合点。", tip: "适合7/6早到或不想正式用餐时。"},
+      { type: "food", layer: "food", name: "TLV Restaurant & Bar", lat: -44.0046, lng: 170.4828, desc: "特卡波镇晚餐主选。", tip: "7/7或7/8晚餐，建议提前订。"},
+      { type: "food", layer: "food", name: "Old Mountaineers Café", lat: -43.7359, lng: 170.0962, desc: "库克山村独立咖啡餐厅，适合午餐、热饮和简单补给。", tip: "山区营业时间需提前确认。"},
+      { type: "food", layer: "food", name: "CHAMOIS BAR & GRILL", lat: -43.7359, lng: 170.1018, desc: "Mt Cook Lodge & Motel 的餐厅，作为库克山晚餐备选。", tip: "若7/8晚留库克山或回特卡波太晚，可作为备选。"},
+      { type: "food", layer: "food", name: "Forage Café Cromwell", lat: -45.0388, lng: 169.1985, desc: "Cromwell 适合咖啡和简餐。", tip: "7/9下午中途休息。"},
+      { type: "food", layer: "food", name: "Public Kitchen & Bar", lat: -45.0334, lng: 168.6577, desc: "皇后镇湖边餐厅，适合稳定晚餐。", tip: "7/9或7/10晚餐可订。"},
+      { type: "food", layer: "food", name: "Flame Bar & Grill", lat: -45.0324, lng: 168.6585, desc: "皇后镇牛排和烤肉餐厅，适合肉食晚餐。", tip: "热门餐厅，建议提前订。"},
+      { type: "food", layer: "food", name: "Fergburger", lat: -45.0310, lng: 168.6608, desc: "皇后镇热门汉堡店。", tip: "排队正常，时间紧可选 Fergbaker。"},
+      { type: "food", layer: "food", name: "Botswana Butchery", lat: -45.0338, lng: 168.6606, desc: "皇后镇湖边正式餐厅。", tip: "适合预算够时安排一顿好晚餐。"},
+      { type: "food", layer: "food", name: "Sandfly Cafe", lat: -45.4148, lng: 167.7171, desc: "Te Anau 咖啡和轻食补给点。", tip: "7/10去米尔福德路上停。"},
+
+      { type: "hotel", layer: "hotels", name: "Rydges Latimer Christchurch", lat: -43.5290, lng: 172.6425, desc: "7/6住宿，约¥971/人/晚，两人约¥1942；15:00入住，10:00退房。", tip: "取消观鲸后保留这晚最稳妥。"},
+      { type: "hotel", layer: "hotels", name: "Peppers Bluewater Resort", lat: -44.0060, lng: 170.4788, desc: "7/7和7/8住宿，约¥1000/人/晚；早餐7:00-10:00，14:00入住，10:00退房。", tip: "连住2晚，减少换酒店。"},
+      { type: "hotel", layer: "hotels", name: "Bella Vista Queenstown", lat: -45.0261, lng: 168.6605, desc: "皇后镇候选，约¥1480/人/晚；14:00入住，11:00退房。", tip: "靠近镇中心，最适合衔接TSS、Skyline和晚餐。"},
+      { type: "hotel", layer: "hotels", name: "Sudima Queenstown Five Mile", lat: -45.0216, lng: 168.7448, desc: "皇后镇候选，£184/晚 + £14早餐；14:00入住，11:00退房。", tip: "Frankton/Five Mile区域，近机场，进镇需打车或包车。"},
+      { type: "hotel", layer: "hotels", name: "Queenstown TOP 10 Holiday Park", lat: -44.9898, lng: 168.6779, desc: "皇后镇候选，£133/晚；14:00入住，11:00退房。", tip: "Arthurs Point，最省钱，但不如市区酒店商务。"}
+    ];
+
+    points.forEach((item) => {
+      L.marker([item.lat, item.lng], { icon: pinIcon(item.type) })
+        .bindPopup(popupHtml(item))
+        .bindTooltip(item.name)
+        .addTo(layers[item.layer]);
+    });
+
+    L.control.layers(null, {
+      "必去景点": layers.sights,
+      "可选景点": layers.optional,
+      "补给/休息": layers.supplies,
+      "吃饭": layers.food,
+      "住宿": layers.hotels,
+      "主路线": layers.route,
+      "米尔福德日线": layers.milford
+    }, {
+      collapsed: false
+    }).addTo(map);
+
+    const bounds = L.latLngBounds([
+      ...routePoints,
+      ...glenorchyRoute,
+      ...milfordRoute
+    ]);
+    map.fitBounds(bounds, { padding: [28, 28] });
+  </script>
+</body>
+</html>
